@@ -1,4 +1,4 @@
-function Remove-MgUserLicense {
+function Add-MgUserLicense {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     param (
         [Parameter(
@@ -24,7 +24,7 @@ function Remove-MgUserLicense {
         }
 
         if ($Products.Count -gt 1) {
-            $Matches = $Products |
+            $ProductMatches = $Products |
                 ForEach-Object {
                     if ($_.ProductName) {
                         $_.ProductName
@@ -37,7 +37,7 @@ function Remove-MgUserLicense {
                     }
                 }
 
-            throw "Multiple license products matched '$ProductName': $($Matches -join ', ')"
+            throw "Multiple license products matched '$ProductName': $($ProductMatches -join ', ')"
         }
 
         $Product = $Products[0]
@@ -61,6 +61,8 @@ function Remove-MgUserLicense {
         else {
             $ProductName
         }
+
+        $RemainingAvailable = [int]$Product.Available
     }
 
     process {
@@ -76,59 +78,54 @@ function Remove-MgUserLicense {
                 continue
             }
 
-            $Assignments = @(
+            $ExistingAssignments = @(
                 $User.LicenseAssignmentStates |
                     Where-Object {
                         [string]$_.SkuId -eq [string]$SkuId
                     }
             )
 
-            if ($Assignments.Count -eq 0) {
+            if ($ExistingAssignments.Count -gt 0) {
+                $DirectAssignment = @(
+                    $ExistingAssignments |
+                        Where-Object { -not $_.AssignedByGroup }
+                )
+
+                $GroupAssignments = @(
+                    $ExistingAssignments |
+                        Where-Object { $_.AssignedByGroup }
+                )
+
+                $AssignmentType = if (
+                    $DirectAssignment.Count -gt 0 -and
+                    $GroupAssignments.Count -gt 0
+                ) {
+                    'Direct and Group'
+                }
+                elseif ($DirectAssignment.Count -gt 0) {
+                    'Direct'
+                }
+                else {
+                    'Group'
+                }
+
                 [pscustomobject]@{
                     PSTypeName        = 'MgUserLicenseResult'
-                    Action            = 'Remove'
-                    Status            = 'NotAssigned'
+                    Action            = 'Add'
+                    Status            = 'AlreadyAssigned'
                     UserPrincipalName = $User.UserPrincipalName
                     DisplayName       = $User.DisplayName
                     ProductName       = $ResolvedProductName
                     SkuId             = $SkuId
-                    AssignmentType    = $null
-                    Message           = "'$ResolvedProductName' is not assigned to $($User.UserPrincipalName)."
+                    AssignmentType    = $AssignmentType
+                    Message           = "'$ResolvedProductName' is already assigned to $($User.UserPrincipalName)."
                 }
 
                 continue
             }
 
-            $DirectAssignments = @(
-                $Assignments |
-                    Where-Object { -not $_.AssignedByGroup }
-            )
-
-            $GroupAssignments = @(
-                $Assignments |
-                    Where-Object { $_.AssignedByGroup }
-            )
-
-            $GroupIds = @(
-                $GroupAssignments.AssignedByGroup |
-                    Where-Object { $_ } |
-                    Sort-Object -Unique
-            )
-
-            if ($DirectAssignments.Count -eq 0) {
-                [pscustomobject]@{
-                    PSTypeName        = 'MgUserLicenseResult'
-                    Action            = 'Remove'
-                    Status            = 'InheritedFromGroup'
-                    UserPrincipalName = $User.UserPrincipalName
-                    DisplayName       = $User.DisplayName
-                    ProductName       = $ResolvedProductName
-                    SkuId             = $SkuId
-                    AssignmentType    = 'Group'
-                    AssignedByGroup   = $GroupIds
-                    Message           = "'$ResolvedProductName' is inherited from a group and cannot be removed directly from the user."
-                }
-
+            if ($RemainingAvailable -le 0) {
+                Write-Error "No licenses are available for '$ResolvedProductName'."
                 continue
             }
 
@@ -137,7 +134,7 @@ function Remove-MgUserLicense {
             if (
                 -not $PSCmdlet.ShouldProcess(
                     $Target,
-                    "Remove license '$ResolvedProductName'"
+                    "Assign license '$ResolvedProductName'"
                 )
             ) {
                 continue
@@ -146,35 +143,30 @@ function Remove-MgUserLicense {
             try {
                 $null = Set-MgUserLicense `
                     -UserId $User.Id `
-                    -AddLicenses @() `
-                    -RemoveLicenses @($SkuId) `
+                    -AddLicenses @(
+                        @{
+                            SkuId = $SkuId
+                        }
+                    ) `
+                    -RemoveLicenses @() `
                     -ErrorAction Stop
 
-                $RemainsAssignedByGroup = $GroupAssignments.Count -gt 0
-
-                $Message = if ($RemainsAssignedByGroup) {
-                    "Successfully removed the direct '$ResolvedProductName' assignment from $($User.UserPrincipalName). The license remains inherited from a group."
-                }
-                else {
-                    "Successfully removed '$ResolvedProductName' from $($User.UserPrincipalName)."
-                }
+                $RemainingAvailable--
 
                 [pscustomobject]@{
-                    PSTypeName            = 'MgUserLicenseResult'
-                    Action                = 'Remove'
-                    Status                = 'Succeeded'
-                    UserPrincipalName     = $User.UserPrincipalName
-                    DisplayName           = $User.DisplayName
-                    ProductName           = $ResolvedProductName
-                    SkuId                 = $SkuId
-                    AssignmentType        = 'Direct'
-                    RemainsAssignedByGroup = $RemainsAssignedByGroup
-                    AssignedByGroup       = $GroupIds
-                    Message               = $Message
+                    PSTypeName        = 'MgUserLicenseResult'
+                    Action            = 'Add'
+                    Status            = 'Succeeded'
+                    UserPrincipalName = $User.UserPrincipalName
+                    DisplayName       = $User.DisplayName
+                    ProductName       = $ResolvedProductName
+                    SkuId             = $SkuId
+                    AssignmentType    = 'Direct'
+                    Message           = "Successfully assigned '$ResolvedProductName' to $($User.UserPrincipalName)."
                 }
             }
             catch {
-                Write-Error "Failed to remove '$ResolvedProductName' from $($User.UserPrincipalName): $($_.Exception.Message)"
+                Write-Error "Failed to assign '$ResolvedProductName' to $($User.UserPrincipalName): $($_.Exception.Message)"
             }
         }
     }

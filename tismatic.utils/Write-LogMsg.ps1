@@ -7,8 +7,7 @@ function Write-LogMsg {
         [object]$InputObject,
         [ValidateSet('FAIL', 'INFO', 'WARN')]
         [string]$LogLevel,
-        [string]$LogFilePath,
-        [object]$TextBox
+        [string]$LogFilePath
     )
     process {
         if ($env:LogFilePath) { $LogFilePath = $env:LogFilePath }
@@ -59,13 +58,7 @@ function Write-LogMsg {
             try { Add-Content -LiteralPath $LogFilePath -Value $logMsg -Encoding utf8 -ErrorAction Stop }
             catch { Write-Warning "Failed to write to log file '$LogFilePath': $($_.Exception.Message)" }
         }
-        $targetTextBox = if ($TextBox) { $TextBox } elseif ($Global:LogTextBox) { $Global:LogTextBox } else { $null }
-        if ($targetTextBox) {
-            Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
-            $append = { param($tb, $text) $tb.AppendText("$text`r`n") }
-            if ($targetTextBox.InvokeRequired) { [void]$targetTextBox.BeginInvoke($append, @($targetTextBox, $logMsg)) }
-            else { & $append $targetTextBox $logMsg }
-        }
+
         $logMsg
     }
 }
