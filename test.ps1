@@ -507,3 +507,71 @@ function Invoke-NmapHostDiscovery {
         }
     }
 }
+
+
+
+function Find-MGDevice {
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            Position = 0,
+            ValueFromRemainingArguments,
+            ValueFromPipeline
+        )]
+        [string[]]$SearchString
+    )
+    begin {
+        $Properties = 'Id,AccountEnabled,ApproximateLastSignInDateTime,DeviceId,DeviceMetadata,DeviceOwnership,DeviceOSType,DeviceOSVersion,DisplayName,IsCompliant,IsManaged,Manufacturer,Model,OnPremisesLastSyncDateTime,OnPremisesSyncEnabled,OperatingSystem,PhysicalIds,ProfileType,RegisteredOwners,RegisteredUsers,SystemLabels,SystemTags,TrustType'
+    }
+
+    process {
+        $SearchText = ($SearchString -join ' ').Trim()
+
+        $Search = '"displayName:{0}" OR "deviceId:{0}" OR "operatingSystem:{0}"' -f $SearchText
+
+        Write-Verbose "Graph search: $Search"
+
+        #$Device = Get-MgDevice -Search $Search -ConsistencyLevel eventual -CountVariable ResultCount -All -Property $Properties
+        $Device = get-mgdevice -filter "(displayname eq '$SearchString')" -ExpandProperty registeredOwners -ConsistencyLevel eventual
+
+        if ($Device -and $device.OperatingSystem -eq 'Windows') {
+            [pscustomobject]@{
+                Id                            = $device.Id
+                Displayname                   = $device.DisplayName
+                OS                            = "$($device.OperatingSystem) $(([version]$device.OperatingSystemVersion).Build -ge 22000 ? '11' : '10')"
+                OwnerDisplayName              = $device.RegisteredOwners.AdditionalProperties.displayName
+                OwnerUserPrincipalName        = $device.RegisteredOwners.AdditionalProperties.userPrincipalName
+                OwnerEmailAddress             = $device.RegisteredOwners.AdditionalProperties.mail
+                OwnerMobilePhone              = $device.RegisteredOwners.AdditionalProperties.mobilePhone
+                OwnerADAccountName            = $device.RegisteredOwners.AdditionalProperties.onPremisesSamAccountName
+                OwnerAdDomain                 = $device.RegisteredOwners.AdditionalProperties.onPremisesDomainName
+                ApproximateLastSignInDateTime = $device.ApproximateLastSignInDateTime
+                TrustType                     = $device.TrustType
+            }
+        }
+        else {
+            Write-Warning "No device found matching '$SearchText'."
+        }
+    }
+}
+
+
+function Get-MicrosoftOfficeProduct {
+	[CmdletBinding()]
+	param (
+        [Parameter(ValueFromPipeline)]
+        $SearchString
+	)
+		
+	begin {
+		if (-not $Global:MSProductNamesCSV) {
+			$CSVUri = "https://download.microsoft.com/download/e/3/e/e3e9faf2-f28b-490a-9ada-c6089a1fc5b0/Product%20names%20and%20service%20plan%20identifiers%20for%20licensing.csv"
+			$Global:MSProductNamesCSV = (Invoke-RestMethod -Uri $CSVUri | ConvertFrom-Csv | select Product_Display_Name,String_Id,GUID -Unique)
+		}
+	}
+		
+	process {
+        $Global:MSProductNamesCSV | Where-Object {$_.Product_Display_Name -eq $SearchString -or $_.String_Id -eq $SearchString} | Select-Object -first 1
+    }
+}

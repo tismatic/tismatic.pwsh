@@ -1,7 +1,7 @@
 # .SYNOPSIS
 # Gets a list of files shared with the current user from other users' OneDrives.
 
-function Get-SahFilesSharedWithMe {
+function Get-MgFilesSharedWithMe {
     [CmdletBinding()]
     param(
         # Optional: filter to a specific user's OneDrive shares (UPN/email)

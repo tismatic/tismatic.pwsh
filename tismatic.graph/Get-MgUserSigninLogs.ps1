@@ -143,7 +143,7 @@ Abbreviations such as 30min, 24h, 7d, 2w, and 1mo are also supported.
                 }
 
                 '^w' {
-                    $RangeEnd.AddDays(-($Quantity * 7))
+                    $RangeEnd.AddDays( - ($Quantity * 7))
                     break
                 }
 
@@ -152,14 +152,14 @@ Abbreviations such as 30min, 24h, 7d, 2w, and 1mo are also supported.
                         throw 'Months must be specified as a whole number.'
                     }
 
-                    $RangeEnd.AddMonths(-[int]$Quantity)
+                    $RangeEnd.AddMonths( - [int]$Quantity)
                     break
                 }
             }
         }
         else {
             $RangeStart = $StartDate
-            $RangeEnd   = $EndDate
+            $RangeEnd = $EndDate
 
             # Treat a date-only EndDate as the entire calendar day.
             if ($RangeEnd.TimeOfDay -eq [timespan]::Zero) {
@@ -207,7 +207,7 @@ Abbreviations such as 30min, 24h, 7d, 2w, and 1mo are also supported.
             }
 
             $EscapedUserId = $CurrentUserId.Replace("'", "''")
-            $ParsedGuid    = [guid]::Empty
+            $ParsedGuid = [guid]::Empty
 
             $UserFilter = if (
                 [guid]::TryParse(
@@ -252,11 +252,11 @@ https://graph.microsoft.com/beta/auditLogs/signIns?`$filter=$EncodedFilter&`$top
 
                 if ($Response -is [System.Collections.IDictionary]) {
                     $SignIns = $Response['value']
-                    $Uri     = $Response['@odata.nextLink']
+                    $Uri = $Response['@odata.nextLink']
                 }
                 else {
                     $SignIns = $Response.value
-                    $Uri     = $Response.'@odata.nextLink'
+                    $Uri = $Response.'@odata.nextLink'
                 }
 
                 foreach ($SignIn in @($SignIns)) {
@@ -277,3 +277,39 @@ https://graph.microsoft.com/beta/auditLogs/signIns?`$filter=$EncodedFilter&`$top
         }
     }
 }
+
+<#
+# Useful formatted view
+Get-MgUserSigninLogs `
+    -UserId 'npeltier@apcisg.com' `
+    -Last '24 hours' |
+    Select-Object `
+        createdDateTime,
+        userPrincipalName,
+        signInEventTypes,
+        appDisplayName,
+        resourceDisplayName,
+        ipAddress,
+        clientAppUsed,
+        isInteractive,
+        conditionalAccessStatus,
+        @{
+            Name       = 'Result'
+            Expression = {
+                if ($_.status.errorCode -eq 0) {
+                    'Success'
+                }
+                else {
+                    'Failure'
+                }
+            }
+        },
+        @{
+            Name       = 'ErrorCode'
+            Expression = { $_.status.errorCode }
+        },
+        @{
+            Name       = 'FailureReason'
+            Expression = { $_.status.failureReason }
+        }
+#>
