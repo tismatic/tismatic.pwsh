@@ -17,7 +17,7 @@ function Find-ADuser {
             $PRogressPreference = 'SilentlyContinue'
             $Pattern = "*$($SearchString -join '*')*"
             $Filter = "DisplayName -like '$Pattern' -or UserPrincipalName -like '$SearchString*' -or SamAccountName -like '$SearchString*'"
-            Get-ADUser -Filter $Filter -Server $Server -ErrorAction SilentlyContinue
+            Get-ADUser -Filter $Filter -Properties DisplayName -Server $Server -ErrorAction SilentlyContinue
     
         } -ArgumentList $SearchString, $_
     }

@@ -2,6 +2,40 @@
 function Get-ADComputerBitLocker {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string]$ComputerName,
+
+        [Parameter()]
+        [System.Management.Automation.PSCredential]$Credential
+    )
+
+    process {
+        $adParams = @{}
+
+        if ($Credential) {
+            $adParams.Credential = $Credential
+        }
+
+        $computer = Get-ADComputer -Identity $ComputerName -Properties DistinguishedName @adParams -ErrorAction Stop
+
+        Get-ADObject `
+            -SearchBase $computer.DistinguishedName `
+            -LDAPFilter '(objectClass=msFVE-RecoveryInformation)' `
+            -Properties 'msFVE-RecoveryPassword', 'whenCreated' `
+            @adParams |
+        Sort-Object whenCreated -Descending |
+        Select-Object -First 1 `
+            @{Name = 'ComputerName'; Expression = { $ComputerName }},
+            @{Name = 'Created'; Expression = { $_.whenCreated }},
+            @{Name = 'RecoveryPassword'; Expression = { $_.'msFVE-RecoveryPassword' }}
+    }
+}
+
+
+<#
+function Get-ADComputerBitLocker {
+    [CmdletBinding()]
+    param(
         [Parameter(Mandatory)]
         [string]$ComputerName,
         $Credential
@@ -30,4 +64,5 @@ function Get-ADComputerBitLocker {
     @{Name = 'RecoveryPassword'; Expression = { $_.'msFVE-RecoveryPassword' } },
     @{Name = 'Created'; Expression = { Get-date $_.whenCreated -format "MM/dd/yyy" } } | Sort-Object -Property Created -Descending 
 
-} 
+}
+#>

@@ -28,5 +28,4 @@ function Import-LiquidTemplate {
     }
 
     Invoke-LiquidTemplate -Template $Content -Context $Parameters
-
 }

@@ -6,6 +6,7 @@ function Show-MessageBox {
         [System.Windows.Forms.MessageBoxIcon]$Icon = [System.Windows.Forms.MessageBoxIcon]::Information,
         [Scriptblock]$Scriptblock
     )
+    [void][System.Windows.Forms.Application]::EnableVisualStyles()
     $Result = [System.Windows.Forms.MessageBox]::Show($Message, $Title, $Buttons, $Icon)
     if ($Result -eq 'OK' -and $Scriptblock) {
         $Scriptblock.Invoke()
@@ -28,4 +29,4 @@ $message = @"
 ⠀⠀⠀⠀⠀⠀⠘⢷⡀⢹⡄⠀⠀⢀⡿⠀⢠⡟⠁⠀⢻⣌⣿⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠙⠛⠁⠀⠀⠈⠓⠚⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 "@
-Show-MessageBox -Icon None -Message $Message -Buttons ok -Title 'CattButt.exe'
+#Show-MessageBox -Icon None -Message $Message -Buttons ok -Title 'CattButt.exe'

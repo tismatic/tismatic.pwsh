@@ -1,0 +1,1 @@
+Get-ChildItem -Recurse -File -Filter "*.ps1" -Exclude "import.ps1" | ForEach-Object {. $($_.fullname)}

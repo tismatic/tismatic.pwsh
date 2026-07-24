@@ -2,8 +2,8 @@ function Send-MgTeamsMessage {
     [CmdletBinding()]
     param (
         # Omit UserId or specify "me" to send to your Teams self-chat.
-        [Parameter(Position = 0)]
-        [Alias('Recipient')]
+        [Parameter(Position = 0,ValuefromPipeline,ValueFromPipelineByPropertyName)]
+        [Alias('Recipient','UserPrincipalName')]
         [string]$UserId = 'me',
 
         [Parameter(Mandatory, Position = 1)]
@@ -29,9 +29,7 @@ function Send-MgTeamsMessage {
     }
 
     # Resolve the signed-in user.
-    $me = Invoke-MgRequest @requestParameters `
-        -Method GET `
-        -Uri 'https://graph.microsoft.com/v1.0/me'
+    $me = Invoke-MgRequest @requestParameters -Method GET -Uri 'https://graph.microsoft.com/v1.0/me'
 
     if (-not $me.id) {
         throw 'Could not resolve the current user through /me.'
@@ -62,9 +60,7 @@ function Send-MgTeamsMessage {
     else {
         $escapedUserId = [uri]::EscapeDataString($UserId)
 
-        $target = Invoke-MgRequest @requestParameters `
-            -Method GET `
-            -Uri "https://graph.microsoft.com/v1.0/users/$escapedUserId"
+        $target = Invoke-MgRequest @requestParameters -Method GET -Uri "https://graph.microsoft.com/v1.0/users/$escapedUserId"
 
         if (-not $target.id) {
             throw "Could not resolve user '$UserId'."
@@ -88,10 +84,7 @@ function Send-MgTeamsMessage {
             )
         }
 
-        $chat = Invoke-MgRequest @requestParameters `
-            -Method POST `
-            -Uri 'https://graph.microsoft.com/v1.0/chats' `
-            -Body $createBody
+        $chat = Invoke-MgRequest @requestParameters -Method POST -Uri 'https://graph.microsoft.com/v1.0/chats' -Body $createBody
 
         if (-not $chat.id) {
             throw "Failed to obtain a one-on-one chat with '$UserId'."
@@ -106,10 +99,7 @@ function Send-MgTeamsMessage {
     }
 
     try {
-        $msg = Invoke-MgRequest @requestParameters `
-            -Method POST `
-            -Uri "https://graph.microsoft.com/v1.0/chats/$($chat.id)/messages" `
-            -Body $payload
+        $msg = Invoke-MgRequest @requestParameters -Method POST -Uri "https://graph.microsoft.com/v1.0/chats/$($chat.id)/messages" -Body $payload
     }
     catch {
         if ($isSelfChat) {
