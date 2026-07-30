@@ -524,10 +524,10 @@ function Get-MicrosoftOfficeProduct {
     }
 		
     process {
-        $Global:MSProductNamesCSV | Where-Object { $_.Product_Display_Name -eq $SearchString -or $_.String_Id -eq $SearchString } | Select-Object -first 1
+        #$Global:MSProductNamesCSV | Where-Object { $_.Product_Display_Name -eq $SearchString -or $_.String_Id -eq $SearchString } | Select-Object -first 1
+        $Global:MSProductNamesCSV | where {$_.Product_Display_Name -match $SearchString -or $_.String_Id -match $SearchString}
     }
 }
-
 
 function Invoke-Async {
     [CmdletBinding()]
@@ -1785,6 +1785,4 @@ function Invoke-Termination {
         }
     }
 }
-
-
 

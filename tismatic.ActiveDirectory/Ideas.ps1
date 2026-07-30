@@ -137,12 +137,12 @@ function Remove-ADUserAllGroups {
         }
 
         $UsersProcessed = 0
-        $GroupsRemoved  = 0
-        $GroupsFailed   = 0
-        $GroupsSkipped  = 0
+        $GroupsRemoved = 0
+        $GroupsFailed = 0
+        $GroupsSkipped = 0
 
         "Starting AD group removal. Log file: $LogFilePath" |
-            Write-LogMsg -LogFilePath $LogFilePath
+        Write-LogMsg -LogFilePath $LogFilePath
     }
 
     process {
@@ -190,9 +190,9 @@ function Remove-ADUserAllGroups {
             }
             catch {
                 "Unable to retrieve AD user '$UserIdentity': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -211,17 +211,17 @@ function Remove-ADUserAllGroups {
 
             if ($GroupMemberships.Count -eq 0) {
                 "'$UserDisplayName' has no direct group memberships to remove." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
 
             "Found $($GroupMemberships.Count) direct group membership(s) for '$UserDisplayName'." |
-                Write-LogMsg `
-                    -LogLevel INFO `
-                    -LogFilePath $LogFilePath
+            Write-LogMsg `
+                -LogLevel INFO `
+                -LogFilePath $LogFilePath
 
             foreach ($GroupDistinguishedName in $GroupMemberships) {
                 $GroupName = $GroupDistinguishedName
@@ -236,9 +236,9 @@ function Remove-ADUserAllGroups {
                 }
                 catch {
                     "Could not resolve group '$GroupDistinguishedName' to a friendly name. The distinguished name will be used." |
-                        Write-LogMsg `
-                            -LogLevel WARN `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel WARN `
+                        -LogFilePath $LogFilePath
                 }
 
                 $ShouldRemove = $PSCmdlet.ShouldProcess(
@@ -257,9 +257,9 @@ function Remove-ADUserAllGroups {
                     }
 
                     $SkipMessage |
-                        Write-LogMsg `
-                            -LogLevel INFO `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel INFO `
+                        -LogFilePath $LogFilePath
 
                     continue
                 }
@@ -275,17 +275,17 @@ function Remove-ADUserAllGroups {
                     $GroupsRemoved++
 
                     "Removed '$UserDisplayName' from '$GroupName'." |
-                        Write-LogMsg `
-                            -LogLevel INFO `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel INFO `
+                        -LogFilePath $LogFilePath
                 }
                 catch {
                     $GroupsFailed++
 
                     "Failed to remove '$UserDisplayName' from '$GroupName': $($_.Exception.Message)" |
-                        Write-LogMsg `
-                            -LogLevel FAIL `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel FAIL `
+                        -LogFilePath $LogFilePath
                 }
             }
         }
@@ -410,9 +410,9 @@ function Set-ADUserOffboardDisplayName {
             $LogFilePath = Join-Path `
                 -Path $LogDirectory `
                 -ChildPath (
-                    'Set-ADUserOffboardDisplayName_{0}.log' -f
-                    (Get-Date -Format 'yyyyMMdd_HHmmss')
-                )
+                'Set-ADUserOffboardDisplayName_{0}.log' -f
+                (Get-Date -Format 'yyyyMMdd_HHmmss')
+            )
         }
         else {
             $LogFilePath = $ExpandedLogPath
@@ -443,12 +443,12 @@ function Set-ADUserOffboardDisplayName {
         }
 
         $UsersProcessed = 0
-        $UsersUpdated   = 0
-        $UsersSkipped   = 0
-        $UsersFailed    = 0
+        $UsersUpdated = 0
+        $UsersSkipped = 0
+        $UsersFailed = 0
 
         "Starting offboard display-name updates. Log file: $LogFilePath" |
-            Write-LogMsg -LogFilePath $LogFilePath
+        Write-LogMsg -LogFilePath $LogFilePath
     }
 
     process {
@@ -497,9 +497,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersFailed++
 
                 "Unable to retrieve AD user '$UserIdentity': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -515,9 +515,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersFailed++
 
                 "User '$UserDescription' does not have a display name." |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -526,9 +526,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersSkipped++
 
                 "Skipped '$UserDescription' because its display name is already '$($ADUser.DisplayName)'." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -552,9 +552,9 @@ function Set-ADUserOffboardDisplayName {
                 }
 
                 $Message |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -569,17 +569,17 @@ function Set-ADUserOffboardDisplayName {
                 $UsersUpdated++
 
                 "Changed '$UserDescription' display name from '$OldDisplayName' to '$NewDisplayName'." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
             }
             catch {
                 $UsersFailed++
 
                 "Failed to update '$UserDescription': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
             }
         }
     }
@@ -593,18 +593,18 @@ Users skipped:   $UsersSkipped
 Users failed:    $UsersFailed
 Log file:        $LogFilePath
 "@ |
-            Write-LogMsg `
-                -LogLevel INFO `
-                -LogFilePath $LogFilePath
+        Write-LogMsg `
+            -LogLevel INFO `
+            -LogFilePath $LogFilePath
     }
 }
 
 function Set-ADUserOffboardDisplayName {
-     [CmdletBinding(
+    [CmdletBinding(
         SupportsShouldProcess,
         ConfirmImpact = 'Medium'
     )]
-     param (
+    param (
         [Parameter(
             Mandatory,
             ValueFromPipeline,
@@ -634,4 +634,6 @@ function Set-ADUserOffboardDisplayName {
         $UserIdentity = Get-ADUser 
     }
 }
+
+
 

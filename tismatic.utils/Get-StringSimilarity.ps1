@@ -74,3 +74,73 @@ function Get-StringSimilarity {
     $similarity = (1.0 - ($distance / [double]$maxLen)) * 100.0
     return [Math]::Round($similarity, 2)
 }
+function Select-SimilarObject {
+    <#
+    .SYNOPSIS
+        Filters pipeline objects based on the similarity of a property value.
+
+    .EXAMPLE
+        $objects | Select-SimilarObject -Property ProductName -CompareString 'e3' -Threshold 10
+
+    .EXAMPLE
+        $objects | Select-SimilarObject -Property ProductName -CompareString 'Microsoft 365 E3' -Threshold 70 -IgnoreCase -Trim
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [AllowNull()]
+        [object]$InputObject,
+
+        [Parameter(Mandatory, Position = 0)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Property,
+
+        [Parameter(Mandatory, Position = 1)]
+        [AllowEmptyString()]
+        [string]$CompareString,
+
+        [Parameter(Position = 2)]
+        [ValidateRange(0, 100)]
+        [double]$Threshold = 50,
+
+        [switch]$IgnoreCase,
+
+        [switch]$Trim,
+
+        [switch]$IncludeScore
+    )
+
+    process {
+        if ($null -eq $InputObject) {
+            return
+        }
+
+        $propertyInfo = $InputObject.PSObject.Properties[$Property]
+
+        if ($null -eq $propertyInfo) {
+            Write-Error "Property '$Property' was not found on object type '$($InputObject.GetType().FullName)'."
+            return
+        }
+
+        $similarityParameters = @{
+            A = [string]$propertyInfo.Value
+            B = $CompareString
+            IgnoreCase = $IgnoreCase
+            Trim = $Trim
+        }
+
+        $score = Get-StringSimilarity @similarityParameters
+
+        if ($score -ge $Threshold) {
+            if ($IncludeScore) {
+                $InputObject | Select-Object *, @{
+                    Name = 'Similarity'
+                    Expression = { $score }
+                }
+            }
+            else {
+                $InputObject
+            }
+        }
+    }
+}
