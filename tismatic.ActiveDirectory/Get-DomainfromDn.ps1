@@ -1,6 +1,6 @@
 function Get-DomainFromDN {
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory,ValueFromPipeline)]
         [string]$DistinguishedName
     )
 

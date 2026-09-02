@@ -9,7 +9,7 @@ function Find-User {
 
     $results
 }
-
+function Get-UserTypeName { param( [Parameter(ValueFromPipeline)] $UserObject ) $UserObject.Gettype().Name } function Invoke-BlockUserSignin { param( [Parameter(ValueFromPipeline)] $UserObject ) $result = switch ($UserObject | Get-UserTypeName) { "MicrosoftGraphUser" { Update-Mguser $UserObject.id -AccountEnabled:$false } "ADUser" { $UserObject | Disable-ADAccount } default { write-error "Unknown user type" } } $result }
 function Get-MyUpn {
     (get-mgcontext).Account
 }
@@ -59,3 +59,6 @@ function Reset-UserPassword {
 
     $result
 }
+
+
+

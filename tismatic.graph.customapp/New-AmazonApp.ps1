@@ -4,7 +4,7 @@ function New-AmazonConnectApp {
     It also saves the application's signing certificate and federation metadata XML to the specified output path.
 
     .EXAMPLE
-    .\New-AmazonApp.ps1 -Company "MyCompany" -Environment "Production" -InstanceId "123456789012" -IamAccountNumber "123456789012"
+    New-AmazonConnectApp.ps1 -Company "MyCompany" -Environment "Production" -InstanceId "123456789012" -IamAccountNumber "123456789012"
 <#>
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -168,5 +168,3 @@ function New-AmazonConnectApp {
         throw [System.InvalidOperationException]::new($message, $_.Exception)
     }
 }
-
-

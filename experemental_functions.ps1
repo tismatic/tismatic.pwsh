@@ -525,7 +525,7 @@ function Get-MicrosoftOfficeProduct {
 		
     process {
         #$Global:MSProductNamesCSV | Where-Object { $_.Product_Display_Name -eq $SearchString -or $_.String_Id -eq $SearchString } | Select-Object -first 1
-        $Global:MSProductNamesCSV | where {$_.Product_Display_Name -match $SearchString -or $_.String_Id -match $SearchString}
+        $Global:MSProductNamesCSV | where { $_.Product_Display_Name -match $SearchString -or $_.String_Id -match $SearchString }
     }
 }
 
@@ -920,12 +920,12 @@ function Remove-ADUserAllGroups {
         }
 
         $UsersProcessed = 0
-        $GroupsRemoved  = 0
-        $GroupsFailed   = 0
-        $GroupsSkipped  = 0
+        $GroupsRemoved = 0
+        $GroupsFailed = 0
+        $GroupsSkipped = 0
 
         "Starting AD group removal. Log file: $LogFilePath" |
-            Write-LogMsg -LogFilePath $LogFilePath
+        Write-LogMsg -LogFilePath $LogFilePath
     }
 
     process {
@@ -973,9 +973,9 @@ function Remove-ADUserAllGroups {
             }
             catch {
                 "Unable to retrieve AD user '$UserIdentity': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -994,17 +994,17 @@ function Remove-ADUserAllGroups {
 
             if ($GroupMemberships.Count -eq 0) {
                 "'$UserDisplayName' has no direct group memberships to remove." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
 
             "Found $($GroupMemberships.Count) direct group membership(s) for '$UserDisplayName'." |
-                Write-LogMsg `
-                    -LogLevel INFO `
-                    -LogFilePath $LogFilePath
+            Write-LogMsg `
+                -LogLevel INFO `
+                -LogFilePath $LogFilePath
 
             foreach ($GroupDistinguishedName in $GroupMemberships) {
                 $GroupName = $GroupDistinguishedName
@@ -1019,9 +1019,9 @@ function Remove-ADUserAllGroups {
                 }
                 catch {
                     "Could not resolve group '$GroupDistinguishedName' to a friendly name. The distinguished name will be used." |
-                        Write-LogMsg `
-                            -LogLevel WARN `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel WARN `
+                        -LogFilePath $LogFilePath
                 }
 
                 $ShouldRemove = $PSCmdlet.ShouldProcess(
@@ -1040,9 +1040,9 @@ function Remove-ADUserAllGroups {
                     }
 
                     $SkipMessage |
-                        Write-LogMsg `
-                            -LogLevel INFO `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel INFO `
+                        -LogFilePath $LogFilePath
 
                     continue
                 }
@@ -1058,17 +1058,17 @@ function Remove-ADUserAllGroups {
                     $GroupsRemoved++
 
                     "Removed '$UserDisplayName' from '$GroupName'." |
-                        Write-LogMsg `
-                            -LogLevel INFO `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel INFO `
+                        -LogFilePath $LogFilePath
                 }
                 catch {
                     $GroupsFailed++
 
                     "Failed to remove '$UserDisplayName' from '$GroupName': $($_.Exception.Message)" |
-                        Write-LogMsg `
-                            -LogLevel FAIL `
-                            -LogFilePath $LogFilePath
+                    Write-LogMsg `
+                        -LogLevel FAIL `
+                        -LogFilePath $LogFilePath
                 }
             }
         }
@@ -1193,9 +1193,9 @@ function Set-ADUserOffboardDisplayName {
             $LogFilePath = Join-Path `
                 -Path $LogDirectory `
                 -ChildPath (
-                    'Set-ADUserOffboardDisplayName_{0}.log' -f
-                    (Get-Date -Format 'yyyyMMdd_HHmmss')
-                )
+                'Set-ADUserOffboardDisplayName_{0}.log' -f
+                (Get-Date -Format 'yyyyMMdd_HHmmss')
+            )
         }
         else {
             $LogFilePath = $ExpandedLogPath
@@ -1226,12 +1226,12 @@ function Set-ADUserOffboardDisplayName {
         }
 
         $UsersProcessed = 0
-        $UsersUpdated   = 0
-        $UsersSkipped   = 0
-        $UsersFailed    = 0
+        $UsersUpdated = 0
+        $UsersSkipped = 0
+        $UsersFailed = 0
 
         "Starting offboard display-name updates. Log file: $LogFilePath" |
-            Write-LogMsg -LogFilePath $LogFilePath
+        Write-LogMsg -LogFilePath $LogFilePath
     }
 
     process {
@@ -1280,9 +1280,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersFailed++
 
                 "Unable to retrieve AD user '$UserIdentity': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -1298,9 +1298,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersFailed++
 
                 "User '$UserDescription' does not have a display name." |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -1309,9 +1309,9 @@ function Set-ADUserOffboardDisplayName {
                 $UsersSkipped++
 
                 "Skipped '$UserDescription' because its display name is already '$($ADUser.DisplayName)'." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -1335,9 +1335,9 @@ function Set-ADUserOffboardDisplayName {
                 }
 
                 $Message |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
 
                 continue
             }
@@ -1352,17 +1352,17 @@ function Set-ADUserOffboardDisplayName {
                 $UsersUpdated++
 
                 "Changed '$UserDescription' display name from '$OldDisplayName' to '$NewDisplayName'." |
-                    Write-LogMsg `
-                        -LogLevel INFO `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel INFO `
+                    -LogFilePath $LogFilePath
             }
             catch {
                 $UsersFailed++
 
                 "Failed to update '$UserDescription': $($_.Exception.Message)" |
-                    Write-LogMsg `
-                        -LogLevel FAIL `
-                        -LogFilePath $LogFilePath
+                Write-LogMsg `
+                    -LogLevel FAIL `
+                    -LogFilePath $LogFilePath
             }
         }
     }
@@ -1376,9 +1376,9 @@ Users skipped:   $UsersSkipped
 Users failed:    $UsersFailed
 Log file:        $LogFilePath
 "@ |
-            Write-LogMsg `
-                -LogLevel INFO `
-                -LogFilePath $LogFilePath
+        Write-LogMsg `
+            -LogLevel INFO `
+            -LogFilePath $LogFilePath
     }
 }
 
@@ -1444,15 +1444,15 @@ function Invoke-Termination {
             $user = Get-ADUser `
                 -Identity $Identity `
                 -Properties @(
-                    'DisplayName'
-                    'DistinguishedName'
-                    'Enabled'
-                    'Mail'
-                    'Manager'
-                    'ObjectGUID'
-                    'SamAccountName'
-                    'UserPrincipalName'
-                ) `
+                'DisplayName'
+                'DistinguishedName'
+                'Enabled'
+                'Mail'
+                'Manager'
+                'ObjectGUID'
+                'SamAccountName'
+                'UserPrincipalName'
+            ) `
                 @adConnectionParameters
         }
         catch {
@@ -1762,10 +1762,10 @@ function Invoke-Termination {
             Write-LogMsg `
                 -LogLevel WARN `
                 -InputObject (
-                    "Termination processing for $userLabel completed with " +
-                    "$($failedActions.Count) failed action(s): " +
-                    "$($failedActions -join ', ')."
-                )
+                "Termination processing for $userLabel completed with " +
+                "$($failedActions.Count) failed action(s): " +
+                "$($failedActions -join ', ')."
+            )
         }
         else {
             Write-LogMsg `
@@ -1774,15 +1774,214 @@ function Invoke-Termination {
         }
 
         [pscustomobject]@{
-            PSTypeName       = 'APC.TerminationResult'
-            SamAccountName   = $user.SamAccountName
+            PSTypeName        = 'APC.TerminationResult'
+            SamAccountName    = $user.SamAccountName
             UserPrincipalName = $user.UserPrincipalName
-            DisplayName      = $user.DisplayName
-            Successful       = $failedActions.Count -eq 0
-            CompletedActions = $completedActions.ToArray()
-            FailedActions    = $failedActions.ToArray()
-            SkippedActions   = $skippedActions.ToArray()
+            DisplayName       = $user.DisplayName
+            Successful        = $failedActions.Count -eq 0
+            CompletedActions  = $completedActions.ToArray()
+            FailedActions     = $failedActions.ToArray()
+            SkippedActions    = $skippedActions.ToArray()
         }
     }
 }
 
+
+
+function New-Litch {
+    $pre = @('tr', 'bi', 'bu', 'ne', 'ti', 'bo', 'va', 'ca', 'ma', 'ra', 'la', 'sa', 'da', 'pa', 'ka', 'ha', 'ja', 'fa', 'ho', 'burg', 'fig', 'suk', 'c', 's', 't', 'k', 'm', 'n', 'l', 'r', 'd', 'g', 'b', 'furb', 'dib', 'grok', 'nabo', 'kro', 'bri', 'bra', 'dra', 'fra', 'gra', 'kra', 'pra', 'tra', 'zra')
+    $suf = @('pp', 'poo', 'krak', 'tt', 'kek', 'ip', 'di', 'bb', 'kk', 'agg', 'kok', 'mib', 'art', 'uz', 'iz', 'op', 'ok', 'uk', 'ik', 'ak', 'ok', 'uk', 'ik', 'ak', 'ok', 'uk', 'ik', 'ak')
+    "$($pre | Get-SecureRandom )$($suf | Get-SecureRandom) $($pre | Get-SecureRandom)$($suf | Get-SecureRandom)"
+}
+
+
+function New-LitchWord {
+    $pre = @(
+        'a', 'ab', 'aff', 'an', 'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ci', 'co', 'cu',
+        'da', 'di', 'do', 'du', 'fa', 'fi', 'fo', 'ga', 'gi', 'go', 'gu', 'ha', 'he',
+        'ji', 'jo', 'ka', 'ke', 'ki', 'ko', 'ku', 'la', 'li', 'lo', 'lu', 'ma', 'me',
+        'mi', 'mo', 'mu', 'na', 'ne', 'ni', 'no', 'nu', 'ob', 'od', 'om', 'pa', 'pi',
+        'po', 'ra', 're', 'ri', 'ro', 'ru', 'sa', 'si', 'so', 'su', 'ta', 'te', 'ti',
+        'to', 'tu', 'va', 'vi', 'vo', 'za', 'zi', 'zo', 'bra', 'bri', 'cra', 'cri',
+        'dra', 'dro', 'fra', 'fre', 'gra', 'gri', 'gro', 'kra', 'kri', 'pra', 'tra'
+    )
+
+    $mid = @(
+        'ba', 'bi', 'bo', 'da', 'di', 'do', 'ga', 'gi', 'go', 'ka', 'ki', 'ko',
+        'la', 'li', 'lo', 'ma', 'mi', 'mo', 'na', 'ni', 'no', 'ra', 'ri', 'ro',
+        'sa', 'si', 'so', 'ta', 'ti', 'to', 'za', 'zi', 'zo'
+    )
+
+    $suf = @(
+        'bb', 'dd', 'gg', 'gg', 'gg', 'kk', 'kk', 'kk', 'mm', 'nn', 'pp', 'rr', 'rr',
+        'ss', 'ss', 'tt', 'tt', 'agg', 'akk', 'egg', 'ekk', 'igg', 'ikk', 'iss',
+        'itt', 'obb', 'odd', 'ogg', 'okk', 'omm', 'orr', 'ott', 'ubb', 'udd', 'ugg',
+        'ukk', 'urr', 'az', 'ik', 'iz', 'oz', 'uz', 'oo', 'uu', 'ii'
+    )
+
+    $name = "$($pre | Get-SecureRandom)"
+
+    if ((Get-SecureRandom -Minimum 0 -Maximum 100) -lt 25) {
+        $name += $mid | Get-SecureRandom
+    }
+
+    $name += $suf | Get-SecureRandom
+
+    $name
+}
+function New-Litch {
+    
+    # Helper function to generate a random litch word. This is used to generate the first and last name of the litch.
+    function New-LitchWord {
+        $pre = @(
+            'a', 'ab', 'aff', 'an', 'ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ci', 'co', 'cu',
+            'da', 'di', 'do', 'du', 'fa', 'fi', 'fo', 'ga', 'gi', 'go', 'gu', 'ha', 'he',
+            'hi', 'ho', 'ja', 'ji', 'jo', 'ka', 'ke', 'ki', 'ko', 'ku', 'la', 'le', 'li',
+            'lo', 'lu', 'ma', 'me', 'mi', 'mo', 'mu', 'na', 'ne', 'ni', 'no', 'nu', 'ob',
+            'od', 'om', 'pa', 'pe', 'pi', 'po', 'ra', 're', 'ri', 'ro', 'ru', 'sa', 'se',
+            'si', 'so', 'su', 'ta', 'te', 'ti', 'to', 'tu', 'va', 've', 'vi', 'vo', 'za',
+            'zi', 'zo', 'bra', 'bre', 'bri', 'bro', 'cra', 'cri', 'dra', 'dro', 'fra',
+            'fre', 'gra', 'gri', 'gro', 'kra', 'kri', 'pra', 'tra', 'tri'
+        )
+
+        $mid = @(
+            'ba', 'bi', 'bo', 'da', 'di', 'do', 'ga', 'gi', 'go', 'ka', 'ki', 'ko',
+            'la', 'li', 'lo', 'ma', 'mi', 'mo', 'na', 'ni', 'no', 'ra', 'ri', 'ro',
+            'sa', 'si', 'so', 'ta', 'ti', 'to', 'za', 'zi', 'zo'
+        )
+
+        # Doubled consonants are intentionally repeated to weight them more heavily. MOAR SILLY.
+        $suf = @(
+            'pp', 'pp', 'pp',
+            'bb', 'bb',
+            'dd',
+            'gg', 'gg', 'gg',
+            'kk', 'kk', 'kk',
+            'mm',
+            'nn',
+            'rr', 'rr',
+            'ss', 'ss',
+            'tt', 'tt', 'tt',
+            'agg', 'akk', 'arr', 'azz',
+            'egg', 'ekk', 'err',
+            'igg', 'ikk', 'irr', 'iss', 'itt',
+            'obb', 'odd', 'ogg', 'okk', 'omm', 'orr', 'ott',
+            'ubb', 'udd', 'ugg', 'ukk', 'urr',
+            'az', 'ik', 'iz', 'oz', 'uz',
+            'oo', 'uu', 'ii'
+        )
+
+        # About 10% of words come directly from the DE nonsense pool LONG LIVE Bopp Bipp.
+        $weird = @(
+            'Agg',
+            'Aigg',
+            'Bipp',
+            'Bopp',
+            'Budd',
+            'Butt',
+            'Crakk',
+            'Duu',
+            'Egg',
+            'Fikk',
+            'Fitt',
+            'Imm',
+            'Krabb',
+            'Obb',
+            'Ogg',
+            'Roo',
+            'Tikk',
+            'Zuu',
+            "Ga'm"
+        )
+
+        if ((Get-SecureRandom -Minimum 0 -Maximum 100) -lt 10) {
+            return ($weird | Get-SecureRandom)
+        }
+
+        $name = $pre | Get-SecureRandom
+
+        # About 25% of names get an extra syllable, producing longer monstrosities.
+        if ((Get-SecureRandom -Minimum 0 -Maximum 100) -lt 25) {
+            $name += $mid | Get-SecureRandom
+        }
+
+        $name += $suf | Get-SecureRandom
+
+        # Capitalize only the first character without mangling apostrophes.
+        "$($name.Substring(0, 1).ToUpper())$($name.Substring(1))"
+    }
+
+    # And now... HERE'S YOUR LITCH!
+    "$(New-LitchWord) $(New-LitchWord)"
+}
+<#
+
+function Find-MgUser {
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory,
+            Position = 0,
+            ValueFromRemainingArguments,
+            ValueFromPipeline
+        )]
+        [string[]]$SearchString
+    )
+    begin {
+        $Properties = 'Id,AccountEnabled,AgeGroup,OfficeLocation,AssignedLicenses,AssignedPlans,City,CompanyName,ConsentProvidedForMinor,Country,CreationType,Department,DisplayName,GivenName,OnPremisesImmutableId,JobTitle,LegalAgeGroupClassification,Mail,MailNickName,MobilePhone,OnPremisesSecurityIdentifier,OtherMails,PasswordPolicies,PasswordProfile,PostalCode,PreferredLanguage,ProvisionedPlans,OnPremisesProvisioningErrors,ProxyAddresses,RefreshTokensValidFromDateTime,ShowInAddressList,State,StreetAddress,Surname,BusinessPhones,UsageLocation,UserPrincipalName,ExternalUserState,ExternalUserStateChangeDateTime,UserType,OnPremisesLastSyncDateTime,ImAddresses,SecurityIdentifier,OnPremisesUserPrincipalName,ServiceProvisioningErrors,IsResourceAccount,OnPremisesExtensionAttributes,DeletedDateTime,OnPremisesSyncEnabled,EmployeeType,EmployeeHireDate,CreatedDateTime,EmployeeOrgData,preferredDataLocation,Identities,onPremisesSamAccountName,EmployeeId,EmployeeLeaveDateTime,AuthorizationInfo,FaxNumber,OnPremisesDistinguishedName,OnPremisesDomainName,IsLicenseReconciliationNeeded,signInSessionsValidFromDateTime,registeredDevices'
+    }
+
+    process {
+        if ($searchString.Count -gt 1) {
+            $SearchText = ($SearchString -join ' ').Trim()
+        }
+
+        $Firstname = $SearchString[0]
+        $Lastname = $SearchString[1]
+        $Search = '"displayName:{0}" OR "userPrincipalName:{0}" OR "mail:{0}" OR "mailNickname:{2}" OR "givenName:{1}" OR "surname:{0}"' -f $SearchText, $Firstname, $Lastname
+
+        Write-Verbose "Graph search: $Search"
+
+        $User = Get-MgUser -Search $Search -ConsistencyLevel eventual -CountVariable ResultCount -All -Property $Properties
+
+
+        if ($User) {
+            $User
+        }
+        else {
+            Write-Warning "No user found matching '$SearchText'."
+        }
+    }
+}
+connect-MgGraph -clientId 1ed3fb67-657d-4e19-a1b4-e58e6f15ec17 -TenantId a924863a-a67c-44b5-b1af-9735ccf85acb
+
+$PhoneSku = Get-MgSubscribedSku -All | Where-Object { $_.SkuPartNumber -eq 'MCOEV' } | Select-Object -First 1
+
+$body = @{
+    addLicenses = @(
+        @{
+            skuId = $PhoneSku.SkuId
+        }
+    )
+    removeLicenses = @()
+} | ConvertTo-Json -Depth 5
+
+$requestParameters = @{
+    Method      = 'POST'
+    Uri         = 'https://graph.microsoft.com/v1.0/users/allim@caltexus.com/assignLicense'
+    Body        = $body
+    ContentType = 'application/json'
+    ErrorAction = 'Stop'
+}
+
+Invoke-MgGraphRequest @requestParameters
+
+$scopes = @(
+    "LicenseAssignment.Read.All"
+    "LicenseAssignment.ReadWrite.All"
+    "User.Read"
+    "User.Read.All"
+)
+
+connect-MgGraph -clientId 1ed3fb67-657d-4e19-a1b4-e58e6f15ec17 -TenantId a924863a-a67c-44b5-b1af-9735ccf85acb -Scopes $Scopes
+#>

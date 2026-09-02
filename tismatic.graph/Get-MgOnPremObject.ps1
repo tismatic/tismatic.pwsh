@@ -2,7 +2,8 @@ function Get-MgOnPremObject {
 	param (
 		[Parameter(ValueFromPipeline)]
 		$MGObject,
-		[string[]]$Properties = "Name"
+		[string[]]$Properties = "Name",
+		[switch]$All
 	)
 	process {
 		foreach ($Account in $MGObject) {
@@ -21,7 +22,12 @@ function Get-MgOnPremObject {
 				}
 			}
 			else {
-				$MGObject | Resolve-ADIdentity
+				if ($All) {
+					$MGObject | Resolve-ADIdentity
+				}
+				else {
+					$MGObject | Resolve-ADIdentity | Where-Object {($_.distinguishedname | Get-DomainFromDN ) -match $MGObject.userprincipalname}
+				}
 			}
 		}
 	}
