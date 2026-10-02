@@ -5,6 +5,9 @@ function Get-ADComputerBitLocker {
         [Parameter(Mandatory, ValueFromPipeline)]
         [string]$ComputerName,
 
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string]$Server,
+
         [Parameter()]
         [System.Management.Automation.PSCredential]$Credential
     )

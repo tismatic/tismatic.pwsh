@@ -5,7 +5,7 @@ function Test-MgIdentityConditionalAccess {
 		[string]$UserId,
 		# Accepts GUID or UPN
 		[string[]]$IncludeApplications,
-		# Override app set (≈ All cloud apps)
+		# Override app set (All cloud apps)
 		[switch]$AppliedOnly # Only return policies that would apply
 	)
 		
@@ -89,7 +89,8 @@ function Test-MgIdentityConditionalAccess {
 					$hasMfa = $true
 				}
 			}
-			if ($p.policyApplies -eq $true) {
+			# if ($p.policyApplies -eq $true) # this wasn't covering report-only 
+			if ($p.PolicyApplies -eq $true -and $p.State -eq 'enabled') {
 				$applied += [PSCustomObject]@{
 					DisplayName   = $p.displayName
 					Id            = $p.id

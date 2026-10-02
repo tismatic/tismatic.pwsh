@@ -23,7 +23,7 @@ function Get-ADPasswordExpirationReport {
 	Where-Object {
 		$_.Enabled -eq $true -and
 		$_.PasswordNeverExpires -eq $false -and
-		$_."msDS-UserPasswordExpiryTimeComputed" -ne $null
+		$null -ne $_."msDS-UserPasswordExpiryTimeComputed"
 	} |
 	Select-Object Name, SamAccountName, UserPrincipalName,
 	@{

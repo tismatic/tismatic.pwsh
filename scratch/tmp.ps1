@@ -446,3 +446,103 @@ $params = @{
 }
 
 Restart-PowerAutomateRun @params
+
+
+
+# AI Scout Installation Script
+$ErrorActionPreference = "Stop"
+
+$BaseUrl = "https://api.aisec.us1.catonetworks.com"
+$ArtifactsUrl = "https://artifacts.catonetworks.com/prod-us1-g/ai-scout/stable"
+$OtelCollectorUrl="https://opentelemetry.aisec.us1.catonetworks.com"
+$ConfigDir = "$env:ProgramData\AIM"
+$ConfigFile = "$ConfigDir\ai-scout-conf.json"
+$InstallPath = "$ConfigDir\ai-scout.exe"
+
+# Create config directory (requires admin)
+if (-not (Test-Path $ConfigDir)) {
+    New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null
+}
+
+# Write config file
+$Config = @{
+    api_key = (Ninja-Property-Get catoScoutApiKey)
+    tenant_id = (Ninja-Property-Get catoScoutTenantId)
+    base_url = $BaseUrl
+    otel_collector_url = $OtelCollectorUrl
+    otel_auth = (Ninja-Property-Get catoScoutOtelauth)
+} | ConvertTo-Json
+
+Set-Content -Path $ConfigFile -Value $Config -Force
+
+# Admin write, all users read (hooks run as the logged-in user and need to read this)
+$AdminSid = [System.Security.Principal.SecurityIdentifier]"S-1-5-32-544"
+$UsersSid = [System.Security.Principal.SecurityIdentifier]"S-1-5-32-545"
+$Acl = Get-Acl $ConfigFile
+$Acl.SetAccessRuleProtection($True, $False)
+$AdminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(`
+    $AdminSid, "FullControl", "Allow")
+$Acl.SetAccessRule($AdminRule)
+$UsersRule = New-Object System.Security.AccessControl.FileSystemAccessRule(`
+    $UsersSid, "Read", "Allow")
+$Acl.SetAccessRule($UsersRule)
+Set-Acl $ConfigFile $Acl
+
+function Install-ScoutBinary {
+    param(
+        [Parameter(Mandatory = $true)][string]$InstallPath,
+        [Parameter(Mandatory = $true)][string]$ArtifactsUrl
+    )
+
+    $binary = "ai-scout-windows-amd64.exe"
+
+    Write-Host "Fetching remote checksum..."
+    $remoteMd5 = (Invoke-RestMethod -Uri "$ArtifactsUrl/$binary.md5").Trim()
+
+    $needsDownload = $true
+    if (Test-Path $InstallPath) {
+        Write-Host "Checking installed version..."
+        $localMd5 = (Get-FileHash -Path $InstallPath -Algorithm MD5).Hash.ToLower()
+
+        if ($remoteMd5 -eq $localMd5) {
+            Write-Host "Installed version is up to date."
+            $needsDownload = $false
+        } else {
+            Write-Host "Update available. Local: $localMd5, Remote: $remoteMd5"
+        }
+    }
+
+    if ($needsDownload) {
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        Write-Host "Downloading $binary..."
+        Invoke-WebRequest -UseBasicParsing -Uri "$ArtifactsUrl/$binary" -OutFile $tempFile
+
+        Write-Host "Validating checksum..."
+        $actual = (Get-FileHash -Path $tempFile -Algorithm MD5).Hash.ToLower()
+
+        if ($remoteMd5 -ne $actual) {
+            Write-Error "MD5 mismatch! Expected: $remoteMd5, Got: $actual"
+            Remove-Item $tempFile -ErrorAction SilentlyContinue
+            exit 1
+        }
+        Move-Item -Path $tempFile -Destination $InstallPath -Force
+        Write-Host "Download complete."
+    }
+}
+
+Install-ScoutBinary -InstallPath $InstallPath -ArtifactsUrl $ArtifactsUrl
+
+# Admin write, all users read+execute (hooks run as the logged-in user and need to execute this)
+$ExeAcl = Get-Acl $InstallPath
+$ExeAcl.SetAccessRuleProtection($True, $False)
+$ExeAdminRule = New-Object System.Security.AccessControl.FileSystemAccessRule(`
+    $AdminSid, "FullControl", "Allow")
+$ExeAcl.SetAccessRule($ExeAdminRule)
+$ExeUsersRule = New-Object System.Security.AccessControl.FileSystemAccessRule(`
+    $UsersSid, "ReadAndExecute", "Allow")
+$ExeAcl.SetAccessRule($ExeUsersRule)
+Set-Acl $InstallPath $ExeAcl
+
+Write-Host "Running AI Scout..."
+& $InstallPath
+

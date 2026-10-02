@@ -35,6 +35,9 @@
         'Find-MgUser'
         'Find-User'
         'Format-Size'
+        'Get-MUCatalogDownloadLink'
+        'Search-MUCatalog'
+        'Get-RemoteFileSize'
         'Get-ADComputerBitLocker'
         'Get-ADPasswordExpirationReport'
         'Get-CimDiskStats'
@@ -89,6 +92,10 @@
         'Test-PwnedPassword'
         'Update-MgDeviceOwner'
         'Write-LogMsg'
+        'Get-AllAdusers'
+        ' Get-MUCatalogDownloadLink'
+        'Search-MUCatalog'
+        'Get-OldHVCheckpoints'
     )
 
     CmdletsToExport   = @()
